@@ -147,7 +147,7 @@ app.post('/api/registerTurf', verifyToken, async (req, res) => {
 app.get('/api/getOwnerTurfs', verifyToken, async (req, res) => {
   try {
       const ownerId = req.user.id; 
-      const turfs = await Turf.find({ ownerId }).select("name location price");
+      const turfs = await Turf.find({ ownerId }).select("name location price timings");
 
       res.status(200).json(turfs);
   } catch (error) {
