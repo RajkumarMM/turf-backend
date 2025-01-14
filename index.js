@@ -154,6 +154,46 @@ app.get('/api/getOwnerTurfs', verifyToken, async (req, res) => {
       res.status(500).json({ error: 'Error fetching turfs', details: error.message });
   }
 });
+// get turf detail with id
+app.get('/api/turfs/:id', async (req, res) => {
+  const { id } = req.params;
+  const turf = await Turf.findById(id); // Replace with your DB logic
+  if (!turf) return res.status(404).send('Turf not found');
+  res.json(turf);
+});
+
+
+// delete owners turf
+app.delete('/api/turfs/:id', async (req, res) => {
+  try {
+      const turf = await Turf.findByIdAndDelete(req.params.id);
+      if (!turf) {
+          return res.status(404).json({ message: 'Turf not found' });
+      }
+      res.status(200).json({ message: 'Turf deleted successfully' });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+// updated turf
+app.put('/api/turfs/:id', async (req, res) => {
+  const { name, location, price, timings } = req.body;
+  try {
+      const turf = await Turf.findByIdAndUpdate(
+          req.params.id,
+          { name, location, price, timings },
+          { new: true } // Return updated document
+      );
+      if (!turf) {
+          return res.status(404).json({ message: 'Turf not found' });
+      }
+      res.status(200).json(turf);
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
