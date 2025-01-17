@@ -9,7 +9,12 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.set('view engine', 'ejs');
+app.set('views', './views');
+app.use(express.static('public'));
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
@@ -53,6 +58,39 @@ const verifyToken = (req, res, next) => {
     res.status(400).json({ message: "Invalid Token" });
   }
 };
+
+// admin panel routes
+// Home Route: Redirect to Admin Panel
+app.get('/', (req, res) => {
+  res.redirect('/admin');
+});
+
+// Admin Panel Route
+app.get('/admin', async (req, res) => {
+  try {
+    const turfs = await Turf.find().select('name location price timings ownerId');
+    const players = await User.find().select('name email');
+    const owners = await Owner.find().select('name email');
+
+    // Calculate the number of turfs per owner
+    const ownerTurfData = await Promise.all(
+      owners.map(async (owner) => {
+        const turfCount = await Turf.countDocuments({ ownerId: owner._id });
+        return { ownerName: owner.name, ownerEmail: owner.email, turfCount };
+      })
+    );
+
+    res.render('admin', { turfs, players, owners: ownerTurfData });
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    res.status(500).send('Server Error');
+  }
+});
+
+
+
+
+// frontend routes
 
 // Register Route
 app.post("/api/register", async (req, res) => {
