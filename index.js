@@ -109,7 +109,7 @@ app.post("/api/login", async (req, res) => {
 // Dashboard Route
 app.get("/api/dashboard", verifyToken, async (req, res) => {
   try {
-    const turfs = await Turf.find().select("name location price"); // Fetch only necessary fields
+    const turfs = await Turf.find().select("name location price timings"); // Fetch only necessary fields
     const totalPlayers = await User.find().select("name email");
 
     res.json({ turfs, totalPlayers });
