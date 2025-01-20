@@ -31,6 +31,18 @@
       window.location.href = page;
     }
   }
+
+   // Wait for the DOM to load
+   document.addEventListener('DOMContentLoaded', () => {
+    const alertElement = document.getElementById('success-alert');
+    if (alertElement) {
+      // Set timeout to remove the alert after 3 seconds
+      setTimeout(() => {
+        alertElement.classList.remove('show'); // Hide the alert visually
+        alertElement.classList.add('fade'); // Ensure fade effect is applied
+      }, 2000);
+    }
+  });
 </script>
 </body>
 </html>

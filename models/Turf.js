@@ -6,7 +6,7 @@ const turfSchema = new mongoose.Schema({
   location: String,
   price: Number,
   timings: [String],
-  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Owner', required: true },
 });
 
 const Turf = mongoose.model("Turf", turfSchema);

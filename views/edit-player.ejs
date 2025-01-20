@@ -1,14 +1,51 @@
-<%- include('partials/header', { title: 'Edit Players' }) %>
-  <h1>Edit Player</h1>
-  <form action="/admin/update-player/<%= player._id %>" method="POST">
-    <div>
-      <label for="name">Name:</label>
-      <input type="text" id="name" name="name" value="<%= player.name %>" required>
-    </div>
-    <div>
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" value="<%= player.email %>" required>
-    </div>
-    <button type="submit">Update Player</button>
-  </form>
-  <%- include('partials/footer') %>
+<%- include('partials/header', { title: 'Edit Player' }) %>
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="text-primary">Edit Player</h1>
+  <a href="/admin/players" class="btn btn-outline-primary">Back</a>
+</div>
+
+<!-- Display success message if it exists -->
+<% if (typeof successMessage !== 'undefined' && successMessage) { %>
+  <div class="alert alert-success" role="alert">
+    <%= successMessage %>
+  </div>
+<% } %>
+
+<!-- Edit Player Form -->
+<form action="/admin/update-player/<%= player._id %>" method="POST" class="border p-4 rounded shadow">
+  <div class="form-group">
+    <label for="name" class="font-weight-bold">Name:</label>
+    <input 
+      type="text" 
+      id="name" 
+      name="name" 
+      value="<%= player.name %>" 
+      class="form-control" 
+      placeholder="Enter player's name" 
+      required
+    >
+  </div>
+  <div class="form-group">
+    <label for="email" class="font-weight-bold">Email:</label>
+    <input 
+      type="email" 
+      id="email" 
+      name="email" 
+      value="<%= player.email %>" 
+      class="form-control" 
+      placeholder="Enter player's email" 
+      required
+    >
+  </div>
+  <div class="d-flex justify-content-between">
+    <button type="submit" class="btn btn-success">Update Player</button>
+    <button 
+        type="button" 
+        class="btn btn-secondary" 
+        onclick="confirmCancel('/admin/players')">Cancel</button>
+  </div>
+</form>
+
+<%- include('partials/footer') %>
