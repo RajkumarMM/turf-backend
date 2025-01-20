@@ -1,0 +1,50 @@
+<%- include('partials/header', { title: 'Edit Owner' }) %>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="text-primary">Edit Owner</h1>
+  <a href="/admin/owners" class="btn btn-outline-primary">Back</a>
+</div>
+
+<!-- Display success message if it exists -->
+<% if (typeof successMessage !== 'undefined' && successMessage) { %>
+  <div class="alert alert-success" role="alert">
+    <%= successMessage %>
+  </div>
+<% } %>
+
+<!-- Edit Owner Form -->
+<form action="/admin/update-owner/<%= owner._id %>" method="POST" class="border p-4 rounded shadow">
+  <div class="form-group">
+    <label for="name" class="font-weight-bold">Name:</label>
+    <input 
+      type="text" 
+      id="name" 
+      name="name" 
+      value="<%= owner.name %>" 
+      class="form-control" 
+      placeholder="Enter owner's name" 
+      required
+    >
+  </div>
+  <div class="form-group">
+    <label for="email" class="font-weight-bold">Email:</label>
+    <input 
+      type="email" 
+      id="email" 
+      name="email" 
+      value="<%= owner.email %>" 
+      class="form-control" 
+      placeholder="Enter owner's email" 
+      required
+    >
+  </div>
+  <div class="d-flex justify-content-between">
+    <button type="submit" class="btn btn-success">Update Owner</button>
+    <button 
+        type="button" 
+        class="btn btn-secondary" 
+        onclick="confirmCancel('/admin/owners')">Cancel</button>
+  </div>
+</form>
+
+<%- include('partials/footer') %>

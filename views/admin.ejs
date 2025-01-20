@@ -1,101 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
-</head>
-<body>
-  <div class="container mt-4">
-    <h1 class="text-center mb-4">Admin Dashboard</h1>
+<%- include('partials/header', { title: 'Admin Dashboard' }) %>
+<!-- Page Title -->
+<h1 class="text-center mb-4 text-primary">Admin Dashboard</h1>
 
-    <!-- Turfs Table -->
-    <h2>Turfs</h2>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Location</th>
-          <th>Price</th>
-          <th>Timings</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (turfs.length > 0) { %>
-          <% turfs.forEach((turf, index) => { %>
-            <tr>
-              <td><%= index + 1 %></td>
-              <td><%= turf.name %></td>
-              <td><%= turf.location %></td>
-              <td><%= turf.price %></td>
-              <td><%= turf.timings.join(', ') %></td>
-            </tr>
-          <% }); %>
-        <% } else { %>
-          <tr>
-            <td colspan="5" class="text-center">No turfs available.</td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
-
-    <!-- Players Table -->
-    <h2>Players</h2>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Email</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (players.length > 0) { %>
-          <% players.forEach((player, index) => { %>
-            <tr>
-              <td><%= index + 1 %></td>
-              <td><%= player.name %></td>
-              <td><%= player.email %></td>
-            </tr>
-          <% }); %>
-        <% } else { %>
-          <tr>
-            <td colspan="3" class="text-center">No players available.</td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
-
-    <!-- Owners and Their Turfs Table -->
-    <h2>Owners</h2>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Number of Turfs</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% if (owners.length > 0) { %>
-          <% owners.forEach((owner, index) => { %>
-            <tr>
-              <td><%= index + 1 %></td>
-              <td><%= owner.ownerName %></td>
-              <td><%= owner.ownerEmail %></td>
-              <td><%= owner.turfCount %></td>
-            </tr>
-          <% }); %>
-        <% } else { %>
-          <tr>
-            <td colspan="4" class="text-center">No owners available.</td>
-          </tr>
-        <% } %>
-      </tbody>
-    </table>
+<!-- Dashboard Cards -->
+<div class="row g-4">
+  <!-- Owners Card -->
+  <div class="col-md-4">
+    <div
+      class="card text-center shadow-sm border-primary"
+      onclick="navigateTo('owners')"
+      style="cursor: pointer"
+    >
+      <div class="card-body">
+        <h5 class="card-title text-primary">Owners</h5>
+        <p class="card-text">
+          Total Owners: <strong><%= owners.length %></strong>
+        </p>
+      </div>
+    </div>
   </div>
-</body>
-</html>
+
+  <!-- Players Card -->
+  <div class="col-md-4">
+    <div
+      class="card text-center shadow-sm border-success"
+      onclick="navigateTo('players')"
+      style="cursor: pointer"
+    >
+      <div class="card-body">
+        <h5 class="card-title text-success">Players</h5>
+        <p class="card-text">
+          Total Players: <strong><%= players.length %></strong>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Turfs Card -->
+  <div class="col-md-4">
+    <div
+      class="card text-center shadow-sm border-warning"
+      onclick="navigateTo('turfs')"
+      style="cursor: pointer"
+    >
+      <div class="card-body">
+        <h5 class="card-title text-warning">Turfs</h5>
+        <p class="card-text">
+          Total Turfs: <strong><%= turfs.length %></strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include('partials/footer') %>

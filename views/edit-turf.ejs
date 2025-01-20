@@ -1,0 +1,25 @@
+<%- include('partials/header', { title: 'Edit Turf' }) %>
+    <h1>Edit Turf</h1>
+    <form action="/admin/edit-turf/<%= turf._id %>" method="POST">
+      <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="<%= turf.name %>" required>
+      </div>
+      <div class="form-group">
+        <label for="location">Location</label>
+        <input type="text" class="form-control" id="location" name="location" value="<%= turf.location %>" required>
+      </div>
+      <div class="form-group">
+        <label for="price">Price</label>
+        <input type="number" class="form-control" id="price" name="price" value="<%= turf.price %>" required>
+      </div>
+      <div class="form-group">
+        <label for="timings">Timings (comma-separated)</label>
+        <input type="text" class="form-control" id="timings" name="timings" 
+               value="<%= turf.timings ? turf.timings.join(', ') : '' %>" required>
+        <small class="form-text text-muted">Enter timings as comma-separated values (e.g., "6:00 AM - 8:00 AM, 5:00 PM - 7:00 PM").</small>
+      </div>
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="/admin/turfs" class="btn btn-secondary">Cancel</a>
+    </form>
+    <%- include('partials/footer') %>

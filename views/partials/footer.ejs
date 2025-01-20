@@ -1,0 +1,36 @@
+</div>
+<footer class="footer mt-5 py-3 bg-light">
+  <div class="container text-center">
+    <span class="text-muted">© 2025 My Turf App</span>
+  </div>
+</footer>
+
+<script>
+  // Function to navigate to specific details page
+  function navigateTo(section) {
+    switch (section) {
+      case 'owners':
+        window.location.href = '/admin/owners';
+        break;
+      case 'players':
+        window.location.href = '/admin/players';
+        break;
+      case 'turfs':
+        window.location.href = '/admin/turfs';
+        break;
+      default:
+        console.error('Invalid section:', section);
+    }
+  }
+
+  function confirmCancel(page) {
+    // Show a confirmation dialog
+    const userConfirmed = confirm("Are you sure you want to cancel this edit?");
+    if (userConfirmed) {
+      // Redirect to the owners list page
+      window.location.href = page;
+    }
+  }
+</script>
+</body>
+</html>

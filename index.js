@@ -4,6 +4,10 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import adminRoutes from "./routes/adminRoutes.js";
+import User from './models/User.js';
+import Owner from './models/Owner.js';
+import Turf from './models/Turf.js';
 
 dotenv.config();
 
@@ -20,32 +24,6 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-const userSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, required: true, unique: true },
-  password: String,
-});
-
-const User = mongoose.model("User", userSchema);
-
-const turfSchema = new mongoose.Schema({
-  name: String,
-  location: String,
-  price: Number,
-  timings: [String], 
-  ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
-});
-
-const Turf = mongoose.model("Turf", turfSchema);
-
-const ownerSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  password: String,
-});
-
-const Owner = mongoose.model("Owner", ownerSchema);
-
 const verifyToken = (req, res, next) => {
   const token = req.header("Authorization");
   if (!token) return res.status(401).json({ message: "Access Denied" });
@@ -59,33 +37,13 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-// admin panel routes
 // Home Route: Redirect to Admin Panel
 app.get('/', (req, res) => {
   res.redirect('/admin');
 });
 
 // Admin Panel Route
-app.get('/admin', async (req, res) => {
-  try {
-    const turfs = await Turf.find().select('name location price timings ownerId');
-    const players = await User.find().select('name email');
-    const owners = await Owner.find().select('name email');
-
-    // Calculate the number of turfs per owner
-    const ownerTurfData = await Promise.all(
-      owners.map(async (owner) => {
-        const turfCount = await Turf.countDocuments({ ownerId: owner._id });
-        return { ownerName: owner.name, ownerEmail: owner.email, turfCount };
-      })
-    );
-
-    res.render('admin', { turfs, players, owners: ownerTurfData });
-  } catch (err) {
-    console.error('Error fetching data:', err);
-    res.status(500).send('Server Error');
-  }
-});
+app.use('/admin', adminRoutes);
 
 
 

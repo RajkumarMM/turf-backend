@@ -1,0 +1,14 @@
+<%- include('partials/header', { title: 'Edit Players' }) %>
+  <h1>Edit Player</h1>
+  <form action="/admin/update-player/<%= player._id %>" method="POST">
+    <div>
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" value="<%= player.name %>" required>
+    </div>
+    <div>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" value="<%= player.email %>" required>
+    </div>
+    <button type="submit">Update Player</button>
+  </form>
+  <%- include('partials/footer') %>
