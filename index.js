@@ -8,10 +8,17 @@ import adminRoutes from "./routes/adminRoutes.js";
 import User from './models/User.js';
 import Owner from './models/Owner.js';
 import Turf from './models/Turf.js';
+import session from 'express-session';
 
 dotenv.config();
 
 const app = express();
+// Session middleware setup
+app.use(session({
+  secret: process.env.JWT_SECRET,  // Replace with a strong secret key
+  resave: false,
+  saveUninitialized: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
@@ -39,7 +46,7 @@ const verifyToken = (req, res, next) => {
 
 // Home Route: Redirect to Admin Panel
 app.get('/', (req, res) => {
-  res.redirect('/admin');
+  res.redirect('/admin/login');
 });
 
 // Admin Panel Route

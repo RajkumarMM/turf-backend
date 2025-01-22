@@ -2,11 +2,62 @@ import express from 'express';
 import User from '../models/User.js';
 import Owner from '../models/Owner.js';
 import Turf from '../models/Turf.js';
+import bcrypt from 'bcrypt';
+import Admin from '../models/Admin.js';
 
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+const isAuthenticated = (req, res, next) => {
+  if (req.session && req.session.adminId) {
+    return next();
+  }
+  res.redirect('/admin/login'); // Redirect to login page if not authenticated
+};
+
+
+// Render login form
+router.get('/login', (req, res) => {
+  res.render('admin-login', { errorMessage: null });
+});
+
+// Handle login POST request
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const admin = await Admin.findOne({ email });
+    if (!admin) {
+      return res.render('admin-login', { errorMessage: 'Invalid email or password.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.render('admin-login', { errorMessage: 'Invalid email or password.' });
+    }
+
+    // Store the admin ID in session
+    req.session.adminId = admin._id;
+    res.redirect('/admin'); // Redirect to the admin dashboard after successful login
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).render('admin-login', { errorMessage: 'An error occurred. Please try again.' });
+  }
+});
+
+// Logout route
+router.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Error during logout:', err);
+      return res.redirect('/admin');
+    }
+    res.redirect('/admin/login'); // Redirect to login page after logout
+  });
+});
+
+// admin homme route
+router.get('/', isAuthenticated, async (req, res) => {
   try {
     const turfs = await Turf.find().select('name location price timings ownerId');
     const players = await User.find().select('name email');
@@ -28,7 +79,7 @@ router.get('/', async (req, res) => {
 });
 
 // get owner route
-router.get('/owners', async (req, res) => {
+router.get('/owners', isAuthenticated, async (req, res) => {
   try {
     const owners = await Owner.find(); // Fetch all owners
     const message = req.query.message; // Extract the message from query params
@@ -41,7 +92,7 @@ router.get('/owners', async (req, res) => {
 
 
 // Get players route
-router.get('/players', async (req, res) => {
+router.get('/players', isAuthenticated, async (req, res) => {
   try {
     const players = await User.find(); // Fetch players from database
     const message = req.query.message; // Get message from query params
@@ -53,7 +104,7 @@ router.get('/players', async (req, res) => {
 });
 
 // get turf route
-router.get('/turfs', async (req, res) => {
+router.get('/turfs', isAuthenticated, async (req, res) => {
   try {
     const turfs = await Turf.find();
     const message = req.query.message; // Get message from query params
@@ -67,13 +118,13 @@ router.get('/turfs', async (req, res) => {
 });
 
 // Edit owner route
-router.get('/edit-owner/:id', async (req, res) => {
+router.get('/edit-owner/:id', isAuthenticated, async (req, res) => {
   const owner = await Owner.findById(req.params.id);
   res.render('edit-owner', { owner });
 });
 
 // Update owner route
-router.post('/update-owner/:id', async (req, res) => {
+router.post('/update-owner/:id', isAuthenticated, async (req, res) => {
   const { id } = req.params;
   const { name, email } = req.body;
 
@@ -98,7 +149,7 @@ router.post('/update-owner/:id', async (req, res) => {
 }); 
 
 // Delete owner route
-router.get('/delete-owner/:id', async (req, res) => {
+router.get('/delete-owner/:id', isAuthenticated, async (req, res) => {
   try {
     const ownerId = req.params.id;
 
@@ -122,13 +173,13 @@ router.get('/delete-owner/:id', async (req, res) => {
 // player routes
 
 // Edit player route
-router.get('/edit-player/:id', async (req, res) => {
+router.get('/edit-player/:id', isAuthenticated, async (req, res) => {
   const player = await User.findById(req.params.id);
   res.render('edit-player', { player });
 });
 
 // Update player route
-router.post('/update-player/:id', async (req, res) => {
+router.post('/update-player/:id', isAuthenticated, async (req, res) => {
   const { id } = req.params;
   const { name, email } = req.body;
 
@@ -157,7 +208,7 @@ router.post('/update-player/:id', async (req, res) => {
 });
 
 // Delete player route
-router.get('/delete-player/:id', async (req, res) => {
+router.get('/delete-player/:id', isAuthenticated, async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id); // Delete the player
     // Redirect with a success message as a query parameter
@@ -175,7 +226,7 @@ router.get('/delete-player/:id', async (req, res) => {
 // turf routes
 
 //  edit turf
-router.get('/edit-turf/:id', async (req, res) => {
+router.get('/edit-turf/:id', isAuthenticated, async (req, res) => {
   try {
     const turf = await Turf.findById(req.params.id);
     if (!turf) {
@@ -188,7 +239,7 @@ router.get('/edit-turf/:id', async (req, res) => {
 });
 
 // Update turf
-router.post('/edit-turf/:id', async (req, res) => {
+router.post('/edit-turf/:id', isAuthenticated, async (req, res) => {
   const { name, location, price, timings } = req.body;
     const id = req.params.id;
   try {
@@ -213,7 +264,7 @@ router.post('/edit-turf/:id', async (req, res) => {
   }
 });
 // Delete turf route
-router.get('/delete-turf/:id', async (req, res) => {
+router.get('/delete-turf/:id', isAuthenticated, async (req, res) => {
   try {
     await Turf.findByIdAndDelete(req.params.id);
   res.redirect('/admin/turfs?message=Turf deleted successfully'); // Redirect back to the turfs list
