@@ -193,11 +193,11 @@ app.delete('/api/turfs/:id', async (req, res) => {
 });
 // updated turf
 app.put('/api/turfs/:id', async (req, res) => {
-  const { name, location, price, timings } = req.body;
+  const { name, location, price, slots } = req.body;
   try {
       const turf = await Turf.findByIdAndUpdate(
           req.params.id,
-          { name, location, price, timings },
+          { name, location, price, slots },
           { new: true } // Return updated document
       );
       if (!turf) {
