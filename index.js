@@ -31,19 +31,26 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-const verifyToken = (req, res, next) => {
-  const token = req.header("Authorization");
-  if (!token) return res.status(401).json({ message: "Access Denied" });
-
-  try {
-    const verified = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
-    req.user = verified;
-    next();
-  } catch (err) {
-    res.status(400).json({ message: "Invalid Token" });
-  }
-};
-
+  const verifyToken = (req, res, next) => {
+    const token = req.header("Authorization");
+    console.log("Token Received:", token); // Logs the received token for debugging
+    
+    // If the token is missing, return a 401 error
+    if (!token) return res.status(401).json({ message: "Access Denied" });
+  
+    try {
+      // Remove "Bearer " prefix and verify the token using the secret
+      const verified = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
+      req.user = verified; // Attach the decoded token payload to the request object
+      console.log("Verified User:", verified); // Log the decoded payload
+      next(); // Proceed to the next middleware
+    } catch (err) {
+      // Log the error and return a 400 error if the token is invalid
+      console.error("Token Verification Failed:", err.message);
+      res.status(400).json({ message: "Invalid Token" });
+    }
+  };
+  
 // Home Route: Redirect to Admin Panel
 app.get('/', (req, res) => {
   res.redirect('/admin/login');
@@ -123,26 +130,29 @@ app.get("/api/dashboard", verifyToken, async (req, res) => {
 
 // Register Turf
 app.post('/api/registerTurf', verifyToken, async (req, res) => {
-  const { name, location, price, timings } = req.body;
+  const { name, location, price, slots } = req.body;
 
-  if (!name || !location || price <= 0 || !Array.isArray(timings)) {
-    return res.status(400).json({ message: "Invalid turf data" });
+  // Validate the input
+  if (!name || !location || !price || !slots) {
+    return res.status(400).json({ error: "All fields are required!" });
   }
 
   try {
-      const ownerId = req.user.id; 
-      const turf = new Turf({
-          name,
-          location,
-          price,
-          timings,
-          ownerId,
-      });
+    // Create a new Turf document
+    const newTurf = new Turf({
+      name,
+      location,
+      price,
+      slots, // slots object will be stored as received
+    });
 
-      await turf.save();
-      res.status(201).json({ message: 'Turf registered successfully!', turf });
+    // Save the turf to the database
+    await newTurf.save();
+
+    res.status(201).json({ message: "Turf registered successfully!", turf: newTurf });
   } catch (error) {
-      res.status(500).json({ error: 'Error registering turf', details: error.message });
+    console.error("Error registering turf:", error);
+    res.status(500).json({ error: "Failed to register turf. Please try again." });
   }
 });
 
