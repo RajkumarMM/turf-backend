@@ -10,8 +10,13 @@ const turfSchema = new mongoose.Schema(
       type: Map,
       of: {
         time: { type: String, required: true },
-        isBooked: { type: Boolean, required: true }
+        isBooked: { type: Boolean, required: true },
       },
+      required: true,
+    },
+    ownerId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Owner", // Reference to the Owner model
       required: true,
     },
   },

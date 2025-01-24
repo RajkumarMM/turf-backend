@@ -138,12 +138,14 @@ app.post('/api/registerTurf', verifyToken, async (req, res) => {
   }
 
   try {
+    const ownerId = req.user.id;
     // Create a new Turf document
     const newTurf = new Turf({
       name,
       location,
       price,
-      slots, // slots object will be stored as received
+      slots,
+      ownerId,
     });
 
     // Save the turf to the database
