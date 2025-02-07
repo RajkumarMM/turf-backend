@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import adminRoutes from "./routes/adminRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 import User from './models/User.js';
 import Owner from './models/Owner.js';
 import Turf from './models/Turf.js';
@@ -63,6 +64,9 @@ app.use('/admin', adminRoutes);
 
 
 // frontend routes
+// booking routes
+app.use("/api/bookings", bookingRoutes);
+
 
 // Register Route
 app.post("/api/register", async (req, res) => {
