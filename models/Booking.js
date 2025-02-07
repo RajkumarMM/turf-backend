@@ -20,12 +20,12 @@ const bookingSchema = new mongoose.Schema(
     userDetails: {
       name: { type: String, required: true },
       email: { type: String, required: true },
-      phone: { type: String, required: true },
+    //   phone: { type: String, required: true },
     },
     slotTime: { type: String, required: true },
     isPaid: { type: Boolean, default: false }, // Payment status
-    paymentMethod: { type: String, default: "Cash" }, // Example: Cash, Card, UPI
-    bookingDate: { type: Date, default: Date.now }, // Date of booking
+    // paymentMethod: { type: String, default: "Cash" }, // Example: Cash, Card, UPI
+    // bookingDate: { type: Date, default: Date.now }, // Date of booking
   },
   { timestamps: true }
 );

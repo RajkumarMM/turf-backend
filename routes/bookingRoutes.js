@@ -2,6 +2,7 @@ import express from "express";
 import Turf from "../models/Turf.js";
 import Booking from "../models/Booking.js";
 import verifyToken from "../middleware/verifyToken.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -21,6 +22,11 @@ router.post("/book-slot", verifyToken, async (req, res) => {
     if (!turf) {
       return res.status(404).json({ message: "Turf not found" });
     }
+     // Find the user
+     const user = await User.findById(userId);
+     if (!user) {
+       return res.status(404).json({ message: "User not found" });
+     }
 
     // Find the slot in the turf
     const slotIndex = turf.slots.findIndex((s) => s.time === time);
@@ -41,8 +47,8 @@ router.post("/book-slot", verifyToken, async (req, res) => {
     const newBooking = new Booking({
         user: userId,
         turf: turfId,
-        slotTime,
-        paymentMethod: paymentMethod || "Cash",
+        slotTime : time,
+        // paymentMethod: paymentMethod || "Cash",
         isPaid: false, // Set to true if integrating a payment gateway
         turfDetails: {
           name: turf.name,
@@ -52,7 +58,7 @@ router.post("/book-slot", verifyToken, async (req, res) => {
         userDetails: {
           name: user.name,
           email: user.email,
-          phone: user.phone || "N/A",
+        //   phone: user.phone || "N/A",
         },
       });
   
