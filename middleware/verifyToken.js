@@ -17,6 +17,10 @@ const verifyToken = (req, res, next) => {
     //   console.log("Verified User:", verified); // Log the decoded payload
       next(); // Proceed to the next middleware
     } catch (err) {
+      console.error("Token Verification Failed:", err.message);
+        if (err.name === "TokenExpiredError") {
+            return res.status(401).json({ message: "Token Expired" });
+        }
       // Log the error and return a 400 error if the token is invalid
       console.error("Token Verification Failed:", err.message);
       res.status(400).json({ message: "Invalid Token" });
