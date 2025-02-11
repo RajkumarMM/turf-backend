@@ -11,8 +11,18 @@ import Owner from './models/Owner.js';
 import Turf from './models/Turf.js';
 import session from 'express-session';
 import verifyToken from './middleware/verifyToken.js';
+import upload from './middleware/multer.js';
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
+
+
+
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 // Session middleware setup
@@ -28,10 +38,14 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 app.use(express.static('public'));
 
+// Serve static files from the 'uploads' folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
+
   
 // Home Route: Redirect to Admin Panel
 app.get('/', (req, res) => {
@@ -114,22 +128,27 @@ app.get("/api/dashboard", verifyToken, async (req, res) => {
 });
 
 // Register Turf
-app.post('/api/registerTurf', verifyToken, async (req, res) => {
-  const { name, location, price, slots } = req.body;
+// Register Turf with Multiple Images
+app.post("/api/registerTurf", verifyToken, upload.array("images", 5), async (req, res) => {
+  const { name, location, price } = req.body;
 
-  // Validate the input
-  if (!name || !location || !price || !slots) {
+  // Validate required fields
+  if (!name || !location || !price) {
     return res.status(400).json({ error: "All fields are required!" });
   }
 
   try {
     const ownerId = req.user.id;
+
+    // Get uploaded image file paths
+    const imagePaths = req.files.map((file) => file.path);
+
     // Create a new Turf document
     const newTurf = new Turf({
       name,
       location,
       price,
-      slots,
+      images: imagePaths, // Store image paths
       ownerId,
     });
 
@@ -166,32 +185,70 @@ app.get('/api/turfs/:id', async (req, res) => {
 // delete owners turf
 app.delete('/api/turfs/:id', async (req, res) => {
   try {
-      const turf = await Turf.findByIdAndDelete(req.params.id);
+      const turf = await Turf.findById(req.params.id);
       if (!turf) {
           return res.status(404).json({ message: 'Turf not found' });
       }
-      res.status(200).json({ message: 'Turf deleted successfully' });
+
+      // Delete associated images from the server
+      if (turf.images && turf.images.length > 0) {
+          turf.images.forEach((imagePath) => {
+              const fullPath = path.join(process.cwd(), imagePath);
+              if (fs.existsSync(fullPath)) {
+                  fs.unlinkSync(fullPath); // Remove image file
+              }
+          });
+      }
+
+      // Delete the turf from the database
+      await Turf.findByIdAndDelete(req.params.id);
+      res.status(200).json({ message: 'Turf and associated images deleted successfully' });
+
   } catch (err) {
-      console.error(err);
+      console.error("Error deleting turf:", err);
       res.status(500).json({ message: 'Server error' });
   }
 });
+
 // updated turf
-app.put('/api/turfs/:id', async (req, res) => {
-  const { name, location, price, slots } = req.body;
+app.put("/api/turfs/:id", upload.array("newImages", 5), async (req, res) => {
   try {
-      const turf = await Turf.findByIdAndUpdate(
-          req.params.id,
-          { name, location, price, slots },
-          { new: true } // Return updated document
-      );
+      const { name, location, price, existingImages } = req.body;
+      const newImagePaths = req.files.map((file) => `uploads/${file.filename}`);
+
+      // Fetch the current turf details
+      const turf = await Turf.findById(req.params.id);
       if (!turf) {
-          return res.status(404).json({ message: 'Turf not found' });
+          return res.status(404).json({ message: "Turf not found" });
       }
-      res.status(200).json(turf);
-  } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Server error' });
+
+      // Identify images to delete
+      const removedImages = turf.images.filter((image) => !existingImages.includes(image));
+
+      // Delete removed images from the server
+      removedImages.forEach((image) => {
+          const imagePath = path.join(process.cwd(), image);
+          if (fs.existsSync(imagePath)) {
+              fs.unlinkSync(imagePath); // Delete image file
+          }
+      });
+
+      // Update turf with new details and images
+      const updatedTurf = await Turf.findByIdAndUpdate(
+          req.params.id,
+          {
+              name,
+              location,
+              price,
+              images: [...existingImages, ...newImagePaths],
+          },
+          { new: true }
+      );
+
+      res.status(200).json(updatedTurf);
+  } catch (error) {
+      console.error("Error updating turf:", error);
+      res.status(500).json({ message: "Server error" });
   }
 });
 
