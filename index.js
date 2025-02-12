@@ -15,6 +15,7 @@ import upload from './middleware/multer.js';
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import searchRoutoes from "./routes/Search.js"
 
 
 
@@ -61,6 +62,9 @@ app.use('/admin', adminRoutes);
 // frontend routes
 // booking routes
 app.use("/api/bookings", bookingRoutes);
+
+// search route
+app.use("/api", searchRoutoes);
 
 
 // Register Route
