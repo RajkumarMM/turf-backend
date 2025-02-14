@@ -9,6 +9,8 @@ import isSameOrAfter from "dayjs/plugin/isSameOrAfter.js";
 
 const router = express.Router();
 
+dayjs.extend(isSameOrAfter);
+
 // POST: Book a slot
 router.post("/book-slot", verifyToken, async (req, res) => {
   try {
