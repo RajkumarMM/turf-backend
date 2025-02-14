@@ -3,6 +3,8 @@ import Turf from "../models/Turf.js";
 import Booking from "../models/Booking.js";
 import verifyToken from "../middleware/verifyToken.js";
 import User from "../models/User.js";
+import dayjs from "dayjs";
+
 
 const router = express.Router();
 
@@ -17,9 +19,13 @@ router.post("/book-slot", verifyToken, async (req, res) => {
     }
 
     // Validate time format (Ensure startTime < endTime)
-    if (parseInt(startTime) >= parseInt(endTime)) {
-      return res.status(400).json({ message: "Invalid time selection" });
-    }
+    const start = dayjs(`2000-01-01T${startTime}:00`);
+const end = dayjs(`2000-01-01T${endTime}:00`);
+
+if (start.isSameOrAfter(end)) {
+  return res.status(400).json({ message: "Invalid time selection" });
+}
+
 
     // Find the turf
     const turf = await Turf.findById(turfId);
