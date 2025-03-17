@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # firebase
-config/firebase-admin-sdk.json
+config/turf-86bf0-firebase-adminsdk-fbsvc-12e02ed181.json
 
 # Runtime data
 pids
