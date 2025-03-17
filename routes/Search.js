@@ -5,7 +5,7 @@ import verifyToken from "../middleware/verifyToken.js";
 
 const router = express.Router();
 
-router.get("/search", verifyToken, async (req, res) => {
+router.get("/search", async (req, res) => {
   try {
     const { location, date, time, amenities, priceRange } = req.query;
 
@@ -26,6 +26,8 @@ router.get("/search", verifyToken, async (req, res) => {
     });
 
     res.json(availableTurfs);
+    console.log(availableTurfs);
+    
   } catch (error) {
     console.error("Error searching turfs:", error);
     res.status(500).json({ success: false, message: "Server Error" });

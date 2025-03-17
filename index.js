@@ -15,7 +15,9 @@ import upload from './middleware/multer.js';
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
-import searchRoutoes from "./routes/Search.js"
+import searchRoutoes from "./routes/Search.js";
+import loginRoutes from "./routes/loginRoutes.js";
+import slotRoutes from "./routes/turfSlotsRoutes.js";
 
 
 
@@ -66,63 +68,71 @@ app.use("/api/bookings", bookingRoutes);
 // search route
 app.use("/api", searchRoutoes);
 
+// login route
+app.use("/api", loginRoutes);
+
+// turf slots route
+app.use("/api", slotRoutes);
+
 
 // Register Route
-app.post("/api/register", async (req, res) => {
-  const { name, email, password, role } = req.body;
+// app.post("/api/register", async (req, res) => {
+//   const { name, email, password, role } = req.body;
 
-  if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters" });
-  }
+//   if (password.length < 6) {
+//     return res.status(400).json({ message: "Password must be at least 6 characters" });
+//   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+//   const hashedPassword = await bcrypt.hash(password, 10);
 
-  try {
-    if (role === 'owner') {
-      const newOwner = new Owner({ name, email, password: hashedPassword });
-      await newOwner.save();
-      res.status(201).json({ message: "Owner registered successfully!" });
-    } else {
-      const newPlayer = new User({ name, email, password: hashedPassword });
-      await newPlayer.save();
-      res.status(201).json({ message: "Player registered successfully!" });
-    }
-  } catch (err) {
-    res.status(400).json({ message: "Error registering user!" });
-  }
-});
+//   try {
+//     if (role === 'owner') {
+//       const newOwner = new Owner({ name, email, password: hashedPassword });
+//       await newOwner.save();
+//       res.status(201).json({ message: "Owner registered successfully!" });
+//     } else {
+//       const newPlayer = new User({ name, email, password: hashedPassword });
+//       await newPlayer.save();
+//       res.status(201).json({ message: "Player registered successfully!" });
+//     }
+//   } catch (err) {
+//     res.status(400).json({ message: "Error registering user!" });
+//   }
+// });
 
 // Login Route
-app.post("/api/login", async (req, res) => {
-  const { email, password, role } = req.body;
+// app.post("/api/login", async (req, res) => {
+//   console.log(req.body);
+  
+//   const { phone, role, name, email } = req.body;
 
-  try {
-    const user = role === 'owner'
-      ? await Owner.findOne({ email })
-      : await User.findOne({ email });
+//   try {
+//     const user = role === 'owner'
+//       ? await Owner.findOne({ email })
+//       : await User.findOne({ email });
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
     
-    const token = jwt.sign(
-      { id: user._id, role: role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+//     const token = jwt.sign(
+//       { id: user._id, role: role },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "7d" }
+//     );
 
-    res.json({ token, role });
-  } catch (err) {
-    console.error("Error in login route:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+//     res.json({ token, role });
+//   } catch (err) {
+//     console.error("Error in login route:", err);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
 
 // Dashboard Route
-app.get("/api/dashboard", verifyToken, async (req, res) => {
+app.get("/api/dashboard", async (req, res) => {
   try {
-    const turfs = await Turf.find().select("name location price timings"); // Fetch only necessary fields
+    const turfs = await Turf.find().select("name location price images"); // Fetch only necessary fields
     const totalPlayers = await User.find().select("name email");
 
     res.json({ turfs, totalPlayers });
@@ -134,10 +144,10 @@ app.get("/api/dashboard", verifyToken, async (req, res) => {
 // Register Turf
 // Register Turf with Multiple Images
 app.post("/api/registerTurf", verifyToken, upload.array("images", 5), async (req, res) => {
-  const { name, location, price } = req.body;
+  const { name, location, price, address, contactNumber, openingTime, closingTime, sports } = req.body;
 
   // Validate required fields
-  if (!name || !location || !price) {
+  if (!name || !location || !price || !address || !contactNumber || !openingTime || !closingTime) {
     return res.status(400).json({ error: "All fields are required!" });
   }
 
@@ -147,13 +157,22 @@ app.post("/api/registerTurf", verifyToken, upload.array("images", 5), async (req
     // Get uploaded image file paths
     const imagePaths = req.files.map((file) => file.path);
 
+    // Handle default slotDuration if not provided in the request body
+    const slotDuration = req.body.slotDuration || 30; // If slotDuration is not provided, use default value of 30
+
     // Create a new Turf document
     const newTurf = new Turf({
       name,
       location,
       price,
-      images: imagePaths, // Store image paths
-      ownerId,
+      address,
+      contactNumber,
+      openingTime,
+      closingTime,
+      slotDuration, // Store slot duration
+      sports, // Store sports available at the turf
+      images: imagePaths, // Array of uploaded image paths
+      ownerId, // The ID of the turf owner (from the verified token)
     });
 
     // Save the turf to the database
