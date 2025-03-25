@@ -132,7 +132,7 @@ app.use("/api", slotRoutes);
 // Dashboard Route
 app.get("/api/dashboard", async (req, res) => {
   try {
-    const turfs = await Turf.find().select("name location price images"); // Fetch only necessary fields
+    const turfs = await Turf.find().select("name location price images sports"); // Fetch only necessary fields
     const totalPlayers = await User.find().select("name email");
 
     res.json({ turfs, totalPlayers });
